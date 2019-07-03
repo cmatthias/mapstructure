@@ -1343,9 +1343,19 @@ func (d *Decoder) decodeStructFromMap(name string, dataVal, val reflect.Value) e
 		fieldName := field.Name
 
 		tagValue := field.Tag.Get(d.config.TagName)
-		tagValue = strings.SplitN(tagValue, ",", 2)[0]
-		if tagValue != "" {
-			fieldName = tagValue
+		tagFieldValue := strings.SplitN(tagValue, ",", 2)[0]
+		if tagFieldValue != "" {
+			fieldName = tagFieldValue
+		}
+
+		// If "required" is specified in the tag, we need make sure it is present.
+		required := false
+		tagParts := strings.Split(tagValue, ",")
+		for _, tag := range tagParts[1:] {
+			if tag == "required" {
+				required = true
+				break
+			}
 		}
 
 		rawMapKey := reflect.ValueOf(fieldName)
@@ -1368,6 +1378,10 @@ func (d *Decoder) decodeStructFromMap(name string, dataVal, val reflect.Value) e
 			}
 
 			if !rawMapVal.IsValid() {
+				if required {
+					err := fmt.Errorf("'%s' is missing required key: %s", name, fieldName)
+					errors = appendErrors(errors, err)
+				}
 				// There was no matching key in the map for the value in
 				// the struct. Remember it for potential errors and metadata.
 				targetValKeysUnused[fieldName] = struct{}{}

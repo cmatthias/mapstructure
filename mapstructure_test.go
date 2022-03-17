@@ -24,6 +24,7 @@ type Basic struct {
 	Vdata       interface{}
 	VjsonInt    int
 	VjsonUint   uint
+	VjsonUint64 uint64
 	VjsonFloat  float64
 	VjsonNumber json.Number
 }
@@ -224,6 +225,7 @@ func TestBasicTypes(t *testing.T) {
 		"vdata":       42,
 		"vjsonInt":    json.Number("1234"),
 		"vjsonUint":   json.Number("1234"),
+		"vjsonUint64": json.Number("9223372036854775809"), // 2^63 + 1
 		"vjsonFloat":  json.Number("1234.5"),
 		"vjsonNumber": json.Number("1234.5"),
 	}
@@ -285,6 +287,10 @@ func TestBasicTypes(t *testing.T) {
 
 	if result.VjsonUint != 1234 {
 		t.Errorf("vjsonuint value should be 1234: %#v", result.VjsonUint)
+	}
+
+	if result.VjsonUint64 != 9223372036854775809 {
+		t.Errorf("vjsonuint64 value should be 9223372036854775809: %#v", result.VjsonUint64)
 	}
 
 	if result.VjsonFloat != 1234.5 {
@@ -1745,6 +1751,7 @@ func TestDecodeTable(t *testing.T) {
 				"Vdata":       []byte("data"),
 				"VjsonInt":    0,
 				"VjsonUint":   uint(0),
+				"VjsonUint64": uint64(0),
 				"VjsonFloat":  0.0,
 				"VjsonNumber": json.Number(""),
 			},
@@ -1786,6 +1793,7 @@ func TestDecodeTable(t *testing.T) {
 					"Vdata":       []byte("data"),
 					"VjsonInt":    0,
 					"VjsonUint":   uint(0),
+					"VjsonUint64": uint64(0),
 					"VjsonFloat":  0.0,
 					"VjsonNumber": json.Number(""),
 				},
@@ -2460,6 +2468,49 @@ func TestDecode_mapToStruct(t *testing.T) {
 
 	if !reflect.DeepEqual(target, expected) {
 		t.Fatalf("bad: %#v", target)
+	}
+}
+
+func TestDecoder_MatchName(t *testing.T) {
+	t.Parallel()
+
+	type Target struct {
+		FirstMatch  string `mapstructure:"first_match"`
+		SecondMatch string
+		NoMatch     string `mapstructure:"no_match"`
+	}
+
+	input := map[string]interface{}{
+		"first_match": "foo",
+		"SecondMatch": "bar",
+		"NO_MATCH":    "baz",
+	}
+
+	expected := Target{
+		FirstMatch:  "foo",
+		SecondMatch: "bar",
+	}
+
+	var actual Target
+	config := &DecoderConfig{
+		Result: &actual,
+		MatchName: func(mapKey, fieldName string) bool {
+			return mapKey == fieldName
+		},
+	}
+
+	decoder, err := NewDecoder(config)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	err = decoder.Decode(input)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	if !reflect.DeepEqual(expected, actual) {
+		t.Fatalf("Decode() expected: %#v, got: %#v", expected, actual)
 	}
 }
 

@@ -24,7 +24,7 @@ in the source data is not allowed.
 Separately, you can also specify `required` in your field tags to indicate that
 a specific field is required:
 
-```
+```golang
 type Foo struct {
   ImportantField string `mapstructure:"important_field,required"`
   OptionalStuff  interface{} `mapstructure:"optional"`

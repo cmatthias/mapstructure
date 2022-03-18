@@ -14,8 +14,8 @@ structure.
 I forked this library from the upstream version out of frustration that useful 
 PRs were being submitted by users and never merged by the maintainer. This fork 
 includes the following two PRs:
-https://github.com/mitchellh/mapstructure/pull/225
-https://github.com/mitchellh/mapstructure/pull/167
+* https://github.com/mitchellh/mapstructure/pull/225
+* https://github.com/mitchellh/mapstructure/pull/167
 
 Specifically, you can specify `ErrorUnset: true` in your `DecoderConfig` to tell
 the library that having fields defined in your destination struct that aren't

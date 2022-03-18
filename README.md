@@ -45,7 +45,7 @@ Aside from the two PRs linked above, no other changes have been made to the sour
 Standard `go get`:
 
 ```
-$ go get github.com/mitchellh/mapstructure
+$ go get github.com/cmatthias/mapstructure
 ```
 
 ## Usage & Example

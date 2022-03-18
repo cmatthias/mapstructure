@@ -9,6 +9,37 @@ until you read a part of it. You can therefore read a `map[string]interface{}`
 and use this library to decode it into the proper underlying native Go
 structure.
 
+## Fork information
+
+I forked this library from the upstream version out of frustration that useful 
+PRs were being submitted by users and never merged by the maintainer. This fork 
+includes the following two PRs:
+https://github.com/mitchellh/mapstructure/pull/225
+https://github.com/mitchellh/mapstructure/pull/167
+
+Specifically, you can specify `ErrorUnset: true` in your `DecoderConfig` to tell
+the library that having fields defined in your destination struct that aren't
+in the source data is not allowed.
+
+Separately, you can also specify `required` in your field tags to indicate that
+a specific field is required:
+
+```
+type Foo struct {
+  ImportantField string `mapstructure:"important_field,required"`
+  OptionalStuff  interface{} `mapstructure:"optional"`
+}
+```
+
+When decoding into the struct defined in the above example, if `important_field`
+is missing in the input, an error will be returned. If `optional` is missing,
+no error will be returned.
+
+Note that using the `required` tag in conjunction with `ErrorUnset` doesn't make
+a whole lot of sense, and is untested/not supported.
+
+Aside from the two PRs linked above, no other changes have been made to the source.
+
 ## Installation
 
 Standard `go get`:
